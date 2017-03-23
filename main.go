@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
+
+	"github.com/bfontaine/quinoa/compiler"
 
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -28,47 +30,20 @@ func main() {
 	aVal := builder.CreateLoad(a, "a_val")
 	bVal := builder.CreateLoad(b, "b_val")
 
+	// TODO see how to print that
+	// https://stackoverflow.com/questions/31092531/llvm-ir-printing-a-number
+
 	res := builder.CreateAdd(aVal, bVal, "ab_val")
 	builder.CreateRet(res)
 
-	if ok := llvm.VerifyModule(mod, llvm.ReturnStatusAction); ok != nil {
-		log.Fatal(ok.Error())
-	}
+	comp := compiler.NewCompiler()
 
-	mod.Dump()
-
-	// http://llvm.org/docs/tutorial/LangImpl08.html
-	const cpu = "generic"
-	const features = ""
-
-	llvm.InitializeAllTargetInfos()
-	llvm.InitializeAllTargetMCs()
-	llvm.InitializeAllTargets()
-	llvm.InitializeAllAsmParsers()
-	llvm.InitializeAllAsmPrinters()
-
-	tt := llvm.DefaultTargetTriple()
-
-	t, err := llvm.GetTargetFromTriple(tt)
-	if err != nil {
+	if err := comp.WriteObjectFile(mod, "a.o"); err != nil {
 		log.Fatal(err)
 	}
 
-	tm := t.CreateTargetMachine(tt, "", "", llvm.CodeGenLevelNone, llvm.RelocDefault, llvm.CodeModelDefault)
-
-	mod.SetDataLayout("")
-	mod.SetTarget(tt)
-
-	buff, err := tm.EmitToMemoryBuffer(mod, llvm.ObjectFile)
-	if err != nil {
+	if err := comp.LinkObjectFile("a.o", "a.out", []string{"-lSystem"}); err != nil {
 		log.Fatal(err)
 	}
-
-	f, err := os.Create("a.o")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	f.Write(buff.Bytes())
+	fmt.Println("--> a.out")
 }
