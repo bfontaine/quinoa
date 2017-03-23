@@ -7,14 +7,14 @@ For now it’s not that interesting:
     $ go build ./main.go
     $ ./main
 
-It should generate `a.o`. Link it with `ld a.o -lSystem -o foo` (on macOS).
+It should generate `a.out`.
 Then:
 
-    $ ./foo
+    $ ./a.out
     $ echo $?
     42
 
-That’s it!
+That’s it! It runs on macOS; probably not on other platforms.
 
 ## Hacking
 
