@@ -24,3 +24,7 @@ That’s it!
         ./install_llvmgo.sh
 
 [goscript]: https://github.com/g/blob/master/scripts/install_llvmgo.sh
+
+## References
+
+* [An introduction to LLVM in Go](https://felixangell.com/blog/an-introduction-to-llvm-in-go)
