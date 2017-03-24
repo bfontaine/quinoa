@@ -1,15 +1,36 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/bfontaine/quinoa/compiler"
 	"github.com/bfontaine/quinoa/language"
 )
 
 func main() {
-	ast, err := language.Parse("")
+	var output, ldflags string
+
+	flag.StringVar(&output, "o", "a.out", "output file")
+	flag.StringVar(&ldflags, "ldflags", "-lc", "space-separated ld flags")
+
+	flag.Parse()
+
+	if flag.NArg() != 1 {
+		fmt.Println("Please give me one source file")
+		os.Exit(1)
+	}
+
+	code, err := ioutil.ReadFile(flag.Arg(0))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ast, err := language.Parse(string(code))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,8 +46,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := comp.LinkObjectFile("a.o", "a.out", []string{"-lSystem", "-lc"}); err != nil {
+	// macOS: -lSystem -lc
+	ldflagsArgs := strings.Split(ldflags, " ")
+
+	if err := comp.LinkObjectFile("a.o", output, ldflagsArgs); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("--> a.out")
 }
