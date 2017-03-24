@@ -1,20 +1,24 @@
 # Quinoa
 
+## Build
+
+    $ go build -o quinoa ./main.go
+
 ## Run
 
-For now it’s not that interesting:
+    # code
+    $ touch foo.qi
 
-    $ go build ./main.go
-    $ ./main
+    # compile
+    $ ./quinoa -o foo ./foo.qi
 
-It should generate `a.out`.
-Then:
+    # run
+    $ ./foo
 
-    $ ./a.out
-    $ echo $?
-    42
+On macOS you need to pass `-ldflags '-lc -lSystem'` when compiling.
 
-That’s it! It runs on macOS; probably not on other platforms.
+The parsing step is not implemented so it always generates the same object code
+for now.
 
 ## Hacking
 
