@@ -1,11 +1,5 @@
-# Ignore everything
-/*
-# Except our stuff
-!.gitignore
-!/*.go
-!/language
-!/compiler
-!/language/*.go
-!/compiler/*.go
-!/README.md
-!/LICENSE
+*.ll
+*.c
+*.o
+*.out
+/main
