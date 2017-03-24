@@ -16,7 +16,7 @@ func main() {
 	var output, ldflags string
 
 	flag.StringVar(&output, "o", "a.out", "output file")
-	flag.StringVar(&ldflags, "ldflags", "-lc", "space-separated ld flags")
+	flag.StringVar(&ldflags, "ldflags", "-lc", "comma-separated ld flags")
 
 	flag.Parse()
 
@@ -46,8 +46,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// macOS: -lSystem -lc
-	ldflagsArgs := strings.Split(ldflags, " ")
+	// macOS min: -lSystem
+	ldflagsArgs := strings.Split(ldflags, ",")
 
 	if err := comp.LinkObjectFile("a.o", output, ldflagsArgs); err != nil {
 		log.Fatal(err)

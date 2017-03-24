@@ -15,8 +15,6 @@
     # run
     $ ./foo
 
-On macOS you need to pass `-ldflags '-lc -lSystem'` when compiling.
-
 The parsing step is not implemented so it always generates the same object code
 for now.
 
