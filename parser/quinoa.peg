@@ -1,0 +1,49 @@
+package parser
+
+type Parser Peg {}
+
+Program <- Spaces Statements Spaces !.
+
+Statements <- (Statement Spaces StatementSep Spaces) * Statement
+
+StatementSep <- ";" / Newline / Comment
+
+Statement <- Assign / FuncCall
+
+Assign <- Variable Spaces "=" Spaces Expression
+
+FuncCall <- Name Spaces '(' Spaces FuncArgs Spaces ')'
+
+FuncArgs <- ( Variable Spaces ',' Spaces ) * Variable ?
+
+Expression <- NoBinopExpression / BinOp
+
+NoBinopExpression <- Litteral / Variable / UnOp / '(' Spaces Expression Spaces ')'
+
+Litteral <- Number
+
+Variable <- Name
+
+BinOp <- NoBinopExpression Spaces Op Spaces Expression
+
+UnOp <- Op Spaces Expression
+
+Op <- '+'
+
+Number <- Digit +
+
+Name <- AlphaChar AlphaNumericalChar *
+
+AlphaChar <- [a-zA-Z_]
+
+Digit <- [0-9]
+
+AlphaNumericalChar <- AlphaChar / Digit
+
+Comment <- '#' (!Newline .)* Newline
+
+Spaces <- Space *
+
+Space <- ' ' / '\t' / NewLine / Comment
+
+Newline <- '\r\n' / '\n' / '\r'

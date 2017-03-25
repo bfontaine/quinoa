@@ -2,5 +2,6 @@
 *.c
 *.o
 *.out
+*.qi
 /main
 /quinoa

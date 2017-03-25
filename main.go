@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/bfontaine/quinoa/compiler"
-	"github.com/bfontaine/quinoa/language"
+	"github.com/bfontaine/quinoa/parser"
 )
 
 func main() {
@@ -25,22 +25,30 @@ func main() {
 		os.Exit(1)
 	}
 
+	log.Println("Reading...")
+
 	code, err := ioutil.ReadFile(flag.Arg(0))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ast, err := language.Parse(string(code))
+	log.Println("Parsing...")
+
+	ast, err := parser.Parse(string(code))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	comp := compiler.NewCompiler()
 
+	log.Println("Compiling to IR...")
+
 	ir, err := comp.CompileToIR(ast)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Println("Compiling...")
 
 	if err := comp.WriteObjectFile(ir, "a.o"); err != nil {
 		log.Fatal(err)
@@ -48,6 +56,8 @@ func main() {
 
 	// macOS min: -lSystem
 	ldflagsArgs := strings.Split(ldflags, ",")
+
+	log.Println("Linking...")
 
 	if err := comp.LinkObjectFile("a.o", output, ldflagsArgs); err != nil {
 		log.Fatal(err)
