@@ -23,22 +23,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Println("Reading...")
-
 	code, err := ioutil.ReadFile(flag.Arg(0))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(code))
-
 	log.Println("Parsing...")
 
-	//ast, err := parser.Parse(string(code))
-	_, err = parser.Parse(string(code))
+	ast, err := parser.Parse(string(code))
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("Parsed:\n%v", ast)
 
 	//	comp := compiler.NewCompiler()
 	//

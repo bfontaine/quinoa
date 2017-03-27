@@ -6,32 +6,34 @@ type Parser Peg {
 
 Program <- Spaces Statements Spaces !.
 
-Statements <- (Statement Spaces StatementSep Spaces) * Statement
+Statements <- ( Statement SimpleSpaces StatementSep SimpleSpaces ) * Statement
 
-StatementSep <- ";" / Newline / Comment
+StatementSep <- ( Newline / Comment / ';' ) +
 
 Statement <- Assign / FuncCall { p.AddStatement() }
 
-Assign <- Variable Spaces '=' Spaces Expression { p.AddAssign() }
+Assign <- Variable SimpleSpaces '=' Spaces Expression { p.AddAssign() }
 
-FuncCall <- Name               { p.AddFnCall(text) }
-            Spaces '(' Spaces FuncArgs Spaces ')'
+FuncCall <- Name               { p.AddFuncName(text) }
+            SimpleSpaces '(' Spaces FuncArgs Spaces ')' { p.AddFuncCall() }
 
 FuncArgs <- ( Expression Spaces ',' Spaces ) * Expression ?
 
-Expression <- NoBinopExpression / BinOp
+Expression <- Binop / NoBinopExpression
 
-NoBinopExpression <- Litteral / Variable / UnOp / '(' Spaces Expression Spaces ')'
+NoBinopExpression <- Unop / NoOpExpression
+
+NoOpExpression <- Litteral / Variable / '(' Spaces Expression Spaces ')'
 
 Litteral <- Number { p.AddLitteral(text) }
 
 Variable <- Name { p.AddVariable(text) }
 
-BinOp <- NoBinopExpression Spaces
-        Op  { p.AddBinOp(text) }
+Binop <- NoBinopExpression SimpleSpaces
+        Op  { p.AddBinop(text) }
         Spaces Expression
 
-UnOp <- Op Spaces Expression { p.AddUnOp(text) }
+Unop <- Op Spaces NoOpExpression { p.AddUnop(text) }
 
 Op <- '+'
 
@@ -49,6 +51,10 @@ Comment <- '#' (!Newline .)* Newline
 
 Spaces <- Space *
 
-Space <- ' ' / '\t' / Newline / Comment
+Space <- SimpleSpace / Newline / Comment
+
+SimpleSpaces <- SimpleSpace *
+
+SimpleSpace <- ' ' / '\t'
 
 Newline <- '\r\n' / '\n' / '\r'

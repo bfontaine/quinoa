@@ -1,6 +1,10 @@
 package parser
 
-import "github.com/bfontaine/quinoa/ast"
+import (
+	"bytes"
+
+	"github.com/bfontaine/quinoa/ast"
+)
 
 type nodeStack struct {
 	nodes              []*ast.Node
@@ -40,4 +44,23 @@ func (s *nodeStack) Peek() *ast.Node {
 	}
 
 	return s.nodes[s.length-1]
+}
+
+func (s *nodeStack) Empty() bool {
+	return s.length == 0
+}
+
+func (s *nodeStack) String() string {
+	var b bytes.Buffer
+
+	b.Write([]byte("["))
+	for i, e := range s.nodes {
+		if i > 0 {
+			b.Write([]byte(" "))
+		}
+		b.Write([]byte(e.String()))
+	}
+	b.Write([]byte("]"))
+
+	return b.String()
 }
