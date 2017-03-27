@@ -6,9 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
-	"github.com/bfontaine/quinoa/compiler"
 	"github.com/bfontaine/quinoa/parser"
 )
 
@@ -32,34 +30,37 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println(string(code))
+
 	log.Println("Parsing...")
 
-	ast, err := parser.Parse(string(code))
+	//ast, err := parser.Parse(string(code))
+	_, err = parser.Parse(string(code))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	comp := compiler.NewCompiler()
-
-	log.Println("Compiling to IR...")
-
-	ir, err := comp.CompileToIR(ast)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Compiling...")
-
-	if err := comp.WriteObjectFile(ir, "a.o"); err != nil {
-		log.Fatal(err)
-	}
-
-	// macOS min: -lSystem
-	ldflagsArgs := strings.Split(ldflags, ",")
-
-	log.Println("Linking...")
-
-	if err := comp.LinkObjectFile("a.o", output, ldflagsArgs); err != nil {
-		log.Fatal(err)
-	}
+	//	comp := compiler.NewCompiler()
+	//
+	//	log.Println("Compiling to IR...")
+	//
+	//	ir, err := comp.CompileToIR(ast)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	log.Println("Compiling...")
+	//
+	//	if err := comp.WriteObjectFile(ir, "a.o"); err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	// macOS min: -lSystem
+	//	ldflagsArgs := strings.Split(ldflags, ",")
+	//
+	//	log.Println("Linking...")
+	//
+	//	if err := comp.LinkObjectFile("a.o", output, ldflagsArgs); err != nil {
+	//		log.Fatal(err)
+	//	}
 }
