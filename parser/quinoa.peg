@@ -7,15 +7,6 @@ type Parser Peg {
     stack *nodeStack
 }
 
-# FIXME
-#
-# Conflict:
-#
-#  statement . newline
-#
-#  -> statement statementSep .
-#  -> statement 'end' .
-#
 Program <- Spaces Statements Spaces !.
 
 Statements <- Statement ( SimpleSpaces StatementSep SimpleSpaces Statement ) *
