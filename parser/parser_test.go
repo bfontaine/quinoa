@@ -13,11 +13,15 @@ func TestParseValidPrograms(t *testing.T) {
 
 	for _, code := range []string{
 		"a=1",
+		"a=1\n",
+		"a=1#\n",
+		"a=1#x\n",
 		"a=a",
+		"a=a\n",
 		"a=a+1",
 		"a = a + 1",
 		"a = a + 1\n",
-		"a = a + 1\n\n\t          \n\n\t # end",
+		"a = a + 1\n\n\t          \n\n\t # end\n",
 		"print(a + a)",
 		"print(a, a, a, a, a, a)",
 		"print(a, # hey\n b)",
