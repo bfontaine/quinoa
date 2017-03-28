@@ -1,7 +1,8 @@
 package compiler
 
 import (
-	"github.com/bfontaine/quinoa/language"
+	"go/ast"
+
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -20,7 +21,7 @@ func constString(s string) llvm.Value {
 	return llvm.ConstArray(charType, chars)
 }
 
-func (c *Compiler) CompileToIR(ast *language.AST) (*IR, error) {
+func (c *Compiler) CompileToIR(ast *ast.Node) (*IR, error) {
 	// dummy compiler; we just use hardcoded stuff below
 
 	// See https://felixangell.com/blog/an-introduction-to-llvm-in-go
