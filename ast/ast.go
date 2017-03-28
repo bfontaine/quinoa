@@ -11,7 +11,6 @@ const (
 	VariableNodeType
 	UnopNodeType
 	BinopNodeType
-	FuncNameNodeType
 	FuncCallNodeType
 )
 
@@ -51,32 +50,29 @@ func (n *Node) Child() *Node       { return n.child(0) }
 func (n *Node) SecondChild() *Node { return n.child(1) }
 
 func (n *Node) String() string {
-	var useName bool
 	var prefix string
+
+	useName := true
 
 	switch n.nodeType {
 	case RootNodeType:
 		prefix = "root"
+		useName = false
 	case AssignNodeType:
 		prefix = "assignment"
+		useName = false
 	case LitteralNodeType:
 		prefix = "litteral"
-		useName = true
 	case VariableNodeType:
 		prefix = "var"
-		useName = true
 	case UnopNodeType:
 		prefix = "unop"
-		useName = true
 	case BinopNodeType:
 		prefix = "binop"
-		useName = true
 	case FuncCallNodeType:
 		prefix = "funccall"
-		useName = true
 	default:
 		prefix = "?"
-		useName = true
 	}
 
 	var b bytes.Buffer
