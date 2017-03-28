@@ -1,12 +1,24 @@
 package parser
 
+import "github.com/bfontaine/quinoa/ast"
+
 type Parser Peg {
+    root *ast.Node
     stack *nodeStack
 }
 
+# FIXME
+#
+# Conflict:
+#
+#  statement . newline
+#
+#  -> statement statementSep .
+#  -> statement 'end' .
+#
 Program <- Spaces Statements Spaces !.
 
-Statements <- ( Statement SimpleSpaces StatementSep SimpleSpaces ) * Statement
+Statements <- Statement ( SimpleSpaces StatementSep SimpleSpaces Statement ) *
 
 StatementSep <- ( Newline / Comment / ';' ) +
 
@@ -14,24 +26,24 @@ Statement <- Assign / FuncCall { p.AddStatement() }
 
 Assign <- Variable SimpleSpaces '=' Spaces Expression { p.AddAssign() }
 
-FuncCall <- Name               { p.AddFuncName(text) }
-            SimpleSpaces '(' Spaces FuncArgs Spaces ')' { p.AddFuncCall() }
+FuncCall <- Name SimpleSpaces '(' { p.AddFuncCall(text) }
+            Spaces FuncArgs Spaces ')'
 
-FuncArgs <- ( Expression Spaces ',' Spaces ) * Expression ?
+FuncArgs <- ( FuncArg Spaces ',' Spaces ) * FuncArg ?
+
+FuncArg <- Expression { p.AddFuncCallArg() }
 
 Expression <- Binop / NoBinopExpression
 
 NoBinopExpression <- Unop / NoOpExpression
 
-NoOpExpression <- Litteral / Variable / '(' Spaces Expression Spaces ')'
+NoOpExpression <- FuncCall / Litteral / Variable / '(' Spaces Expression Spaces ')'
 
 Litteral <- Number { p.AddLitteral(text) }
 
 Variable <- Name { p.AddVariable(text) }
 
-Binop <- NoBinopExpression SimpleSpaces
-        Op  { p.AddBinop(text) }
-        Spaces Expression
+Binop <- NoBinopExpression SimpleSpaces < Op > Spaces Expression { p.AddBinop(text) }
 
 Unop <- Op Spaces NoOpExpression { p.AddUnop(text) }
 

@@ -4,19 +4,17 @@ import "github.com/bfontaine/quinoa/ast"
 
 func NewParser(code string) *Parser {
 	p := &Parser{
+		root:   ast.NewNode(ast.RootNodeType, ""),
 		stack:  newNodeStack(),
 		Buffer: code,
 	}
-
-	p.AddRoot()
 
 	p.Init()
 	return p
 }
 
 func (p *Parser) AST() *ast.Node {
-	// should be the last node
-	return p.stack.Pop()
+	return p.root
 }
 
 // TODO tests
@@ -49,15 +47,9 @@ func (p *Parser) newNode(nodeType ast.NodeType, name string) {
 	p.push(ast.NewNode(nodeType, name))
 }
 
-func (p *Parser) AddRoot() {
-	// | -> |root
-	p.newNode(ast.RootNodeType, "")
-}
-
 func (p *Parser) AddStatement() {
-	// |root stmt -> root(..., stmt)
-	stmt := p.pop()
-	p.last().AddChild(stmt)
+	// |stmt -> |
+	p.root.AddChild(p.pop())
 }
 
 func (p *Parser) AddAssign() {
@@ -71,31 +63,14 @@ func (p *Parser) AddAssign() {
 	p.push(n)
 }
 
-func (p *Parser) AddFuncName(name string) {
-	// |... -> |... funcName
-
-	// TODO use a token name instead of abusing the AST here
-	p.newNode(ast.FuncNameNodeType, name)
+func (p *Parser) AddFuncCall(name string) {
+	// |... -> |... funcCall(name)
+	p.newNode(ast.FuncCallNodeType, name)
 }
 
-func (p *Parser) AddFuncCall() {
-	// |... fn arg1 ... argn -> |... funcCall(fn, arg1, ..., argn)
-
-	args := make([]*ast.Node, 0)
-
-	for !p.stack.Empty() {
-		arg := p.stack.Peek()
-		if arg.Type() == ast.FuncNameNodeType {
-			p.pop()
-			n := ast.NewNode(ast.FuncCallNodeType, arg.Name())
-			for i := len(args) - 1; i >= 0; i-- {
-				n.AddChild(args[i])
-			}
-			p.push(n)
-			break
-		}
-		args = append(args, p.stack.Pop())
-	}
+func (p *Parser) AddFuncCallArg() {
+	arg := p.pop()
+	p.last().AddChild(arg)
 }
 
 func (p *Parser) AddLitteral(name string) {

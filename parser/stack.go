@@ -30,7 +30,7 @@ func (s *nodeStack) Push(n *ast.Node) {
 
 func (s *nodeStack) Pop() *ast.Node {
 	if s.length <= 0 {
-		return nil
+		panic("cannot pop from empty stack")
 	}
 
 	n := s.Peek()
@@ -40,7 +40,7 @@ func (s *nodeStack) Pop() *ast.Node {
 
 func (s *nodeStack) Peek() *ast.Node {
 	if s.length <= 0 {
-		return nil
+		panic("cannot peek in empty stack")
 	}
 
 	return s.nodes[s.length-1]
@@ -55,6 +55,9 @@ func (s *nodeStack) String() string {
 
 	b.Write([]byte("["))
 	for i, e := range s.nodes {
+		if i >= s.length {
+			break
+		}
 		if i > 0 {
 			b.Write([]byte(" "))
 		}
