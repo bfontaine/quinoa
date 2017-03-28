@@ -12,6 +12,9 @@ import (
 
 func main() {
 	var output, ldflags string
+	var debug bool
+
+	flag.BoolVar(&debug, "debug", false, "debug")
 
 	flag.StringVar(&output, "o", "a.out", "output file")
 	flag.StringVar(&ldflags, "ldflags", "-lc", "comma-separated ld flags")
@@ -28,14 +31,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Parsing...")
+	if debug {
+		log.Println("Parsing...")
+	}
 
 	ast, err := parser.Parse(string(code))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Parsed:\n%v", ast)
+	if debug {
+		log.Printf("Parsed:\n%v", ast)
+	}
 
 	//	comp := compiler.NewCompiler()
 	//
