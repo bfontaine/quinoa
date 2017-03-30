@@ -35,7 +35,7 @@ func main() {
 		log.Println("Parsing...")
 	}
 
-	ast, err := parser.Parse(string(code))
+	ast, err := parser.Parse(string(code), debug)
 	if err != nil {
 		log.Fatal(err)
 	}

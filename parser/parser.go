@@ -1,6 +1,10 @@
 package parser
 
-import "github.com/bfontaine/quinoa/ast"
+import (
+	"log"
+
+	"github.com/bfontaine/quinoa/ast"
+)
 
 func NewParser(code string) *Parser {
 	p := &Parser{
@@ -17,10 +21,9 @@ func (p *Parser) AST() *ast.Node {
 	return p.root
 }
 
-// TODO tests
-
-func Parse(code string) (*ast.Node, error) {
+func Parse(code string, debug bool) (*ast.Node, error) {
 	p := NewParser(code)
+	p.Debug = debug
 
 	if err := p.Parse(); err != nil {
 		return nil, err
@@ -32,10 +35,16 @@ func Parse(code string) (*ast.Node, error) {
 }
 
 func (p *Parser) push(n *ast.Node) {
+	if p.Debug {
+		log.Printf("parser: %v <- %+v", p.stack, n)
+	}
 	p.stack.Push(n)
 }
 
 func (p *Parser) pop() *ast.Node {
+	if p.Debug {
+		log.Printf("parser: %v ->", p.stack)
+	}
 	return p.stack.Pop()
 }
 
