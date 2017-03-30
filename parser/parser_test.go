@@ -64,7 +64,7 @@ func TestParseValidPrograms(t *testing.T) {
 		"f(\n\t1,\n\t2,\n)",
 	} {
 		t.Log(strconv.Quote(code))
-		_, err = Parse(code, false)
+		_, err = Parse(code, testing.Verbose())
 		if err != nil {
 			msg = err.Error()
 		} else {
@@ -87,13 +87,13 @@ func TestParseInvalidPrograms(t *testing.T) {
 		"f\n\n(\n\n1\n\n)",
 	} {
 		t.Log(strconv.Quote(code))
-		_, err = Parse(code, false)
+		_, err = Parse(code, testing.Verbose())
 		assert.NotNil(t, err)
 	}
 }
 
 func TestParseASTAssignBinopPlus(t *testing.T) {
-	actualAST, err := Parse("i = 1 + 2", true)
+	actualAST, err := Parse("i = 1 + 2", testing.Verbose())
 	assert.Nil(t, err)
 
 	assertEqualASTs(t, dummyAST{"", ast.RootNodeType, []dummyAST{
@@ -103,6 +103,32 @@ func TestParseASTAssignBinopPlus(t *testing.T) {
 				dummyAST{"1", ast.LitteralNodeType, nil},
 				dummyAST{"2", ast.LitteralNodeType, nil},
 			}},
+		}},
+	}}, actualAST)
+}
+
+func TestParseASTAssignUnopPlus(t *testing.T) {
+	actualAST, err := Parse("i = + 2", testing.Verbose())
+	assert.Nil(t, err)
+
+	assertEqualASTs(t, dummyAST{"", ast.RootNodeType, []dummyAST{
+		dummyAST{"", ast.AssignNodeType, []dummyAST{
+			dummyAST{"i", ast.VariableNodeType, nil},
+			dummyAST{"+", ast.UnopNodeType, []dummyAST{
+				dummyAST{"2", ast.LitteralNodeType, nil},
+			}},
+		}},
+	}}, actualAST)
+}
+
+func TestParseASTFuncCall2(t *testing.T) {
+	actualAST, err := Parse("f(x, y)", testing.Verbose())
+	assert.Nil(t, err)
+
+	assertEqualASTs(t, dummyAST{"", ast.RootNodeType, []dummyAST{
+		dummyAST{"f", ast.FuncCallNodeType, []dummyAST{
+			dummyAST{"x", ast.VariableNodeType, nil},
+			dummyAST{"y", ast.VariableNodeType, nil},
 		}},
 	}}, actualAST)
 }
