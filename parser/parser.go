@@ -92,20 +92,29 @@ func (p *Parser) AddVariable(name string) {
 	p.newNode(ast.VariableNodeType, name)
 }
 
-func (p *Parser) AddUnop(name string) {
-	// |... expr -> |... unop(expr)
-	n := ast.NewNode(ast.UnopNodeType, name)
-	n.AddChild(p.pop())
-	p.push(n)
+func (p *Parser) StartUnop(name string) {
+	// |... -> |... unop
+	p.push(ast.NewNode(ast.UnopNodeType, name))
 }
 
-func (p *Parser) AddBinop(name string) {
-	// |... expr1 expr2 -> |... binop(expr1, expr2)
-	n := ast.NewNode(ast.BinopNodeType, name)
-	expr2 := p.pop()
-	expr1 := p.pop()
-	n.AddChild(expr1)
-	n.AddChild(expr2)
+func (p *Parser) EndUnop() {
+	// |... unop expr -> |... unop(expr)
+	expr := p.pop()
+	unop := p.last()
+	unop.AddChild(expr)
+}
 
-	p.push(n)
+func (p *Parser) AddBinopName(name string) {
+	// |... expr1 -> |... binop(expr1,)
+	binop := ast.NewNode(ast.BinopNodeType, name)
+	expr1 := p.pop()
+	binop.AddChild(expr1)
+	p.push(binop)
+}
+
+func (p *Parser) EndBinop() {
+	// |... binop(expr1,) expr2 -> |... binop(expr1, expr2)
+	expr2 := p.pop()
+	binop := p.last()
+	binop.AddChild(expr2)
 }

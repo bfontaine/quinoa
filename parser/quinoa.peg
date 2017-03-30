@@ -5,6 +5,8 @@ import "github.com/bfontaine/quinoa/ast"
 type Parser Peg {
     root *ast.Node
     stack *nodeStack
+
+    Debug bool
 }
 
 Program <- Spaces Statements Spaces !.
@@ -13,7 +15,7 @@ Statements <- Statement ( SimpleSpaces StatementSep SimpleSpaces Statement ) *
 
 StatementSep <- ( Newline / Comment / ';' ) +
 
-Statement <- Assign / FuncCall { p.AddStatement() }
+Statement <- ( Assign / FuncCall ) { p.AddStatement() }
 
 Assign <- Variable SimpleSpaces '=' Spaces Expression { p.AddAssign() }
 
@@ -34,11 +36,13 @@ Litteral <- Number { p.AddLitteral(text) }
 
 Variable <- Name { p.AddVariable(text) }
 
-Binop <- NoBinopExpression SimpleSpaces < Op > Spaces Expression { p.AddBinop(text) }
+Binop <- NoBinopExpression SimpleSpaces
+        Op { p.AddBinopName(text) }
+        Spaces Expression { p.EndBinop() }
 
-Unop <- Op Spaces NoOpExpression { p.AddUnop(text) }
+Unop <- Op { p.StartUnop(text) } Spaces NoOpExpression { p.EndUnop() }
 
-Op <- '+'
+Op <- < '+' >
 
 Number <- < Digit + >
 

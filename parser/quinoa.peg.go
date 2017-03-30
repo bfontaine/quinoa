@@ -48,9 +48,11 @@ const (
 	ruleAction3
 	ruleAction4
 	ruleAction5
-	rulePegText
 	ruleAction6
 	ruleAction7
+	ruleAction8
+	ruleAction9
+	rulePegText
 )
 
 var rul3s = [...]string{
@@ -88,9 +90,11 @@ var rul3s = [...]string{
 	"Action3",
 	"Action4",
 	"Action5",
-	"PegText",
 	"Action6",
 	"Action7",
+	"Action8",
+	"Action9",
+	"PegText",
 }
 
 type token32 struct {
@@ -206,9 +210,11 @@ type Parser struct {
 	root  *ast.Node
 	stack *nodeStack
 
+	Debug bool
+
 	Buffer string
 	buffer []rune
-	rules  [37]func() bool
+	rules  [39]func() bool
 	parse  func(rule ...int) error
 	reset  func()
 	Pretty bool
@@ -313,9 +319,13 @@ func (p *Parser) Execute() {
 		case ruleAction5:
 			p.AddVariable(text)
 		case ruleAction6:
-			p.AddBinop(text)
+			p.AddBinopName(text)
 		case ruleAction7:
-			p.AddUnop(text)
+			p.EndBinop()
+		case ruleAction8:
+			p.StartUnop(text)
+		case ruleAction9:
+			p.EndUnop()
 
 		}
 	}
@@ -513,7 +523,7 @@ func (p *Parser) Init() {
 			position, tokenIndex = position7, tokenIndex7
 			return false
 		},
-		/* 3 Statement <- <(Assign / (FuncCall Action0))> */
+		/* 3 Statement <- <((Assign / FuncCall) Action0)> */
 		func() bool {
 			position17, tokenIndex17 := position, tokenIndex
 			{
@@ -529,11 +539,11 @@ func (p *Parser) Init() {
 					if !_rules[ruleFuncCall]() {
 						goto l17
 					}
-					if !_rules[ruleAction0]() {
-						goto l17
-					}
 				}
 			l19:
+				if !_rules[ruleAction0]() {
+					goto l17
+				}
 				add(ruleStatement, position18)
 			}
 			return true
@@ -803,7 +813,7 @@ func (p *Parser) Init() {
 			position, tokenIndex = position49, tokenIndex49
 			return false
 		},
-		/* 13 Binop <- <(NoBinopExpression SimpleSpaces <Op> Spaces Expression Action6)> */
+		/* 13 Binop <- <(NoBinopExpression SimpleSpaces Op Action6 Spaces Expression Action7)> */
 		func() bool {
 			position51, tokenIndex51 := position, tokenIndex
 			{
@@ -814,12 +824,11 @@ func (p *Parser) Init() {
 				if !_rules[ruleSimpleSpaces]() {
 					goto l51
 				}
-				{
-					position53 := position
-					if !_rules[ruleOp]() {
-						goto l51
-					}
-					add(rulePegText, position53)
+				if !_rules[ruleOp]() {
+					goto l51
+				}
+				if !_rules[ruleAction6]() {
+					goto l51
 				}
 				if !_rules[ruleSpaces]() {
 					goto l51
@@ -827,7 +836,7 @@ func (p *Parser) Init() {
 				if !_rules[ruleExpression]() {
 					goto l51
 				}
-				if !_rules[ruleAction6]() {
+				if !_rules[ruleAction7]() {
 					goto l51
 				}
 				add(ruleBinop, position52)
@@ -837,44 +846,51 @@ func (p *Parser) Init() {
 			position, tokenIndex = position51, tokenIndex51
 			return false
 		},
-		/* 14 Unop <- <(Op Spaces NoOpExpression Action7)> */
+		/* 14 Unop <- <(Op Action8 Spaces NoOpExpression Action9)> */
 		func() bool {
-			position54, tokenIndex54 := position, tokenIndex
+			position53, tokenIndex53 := position, tokenIndex
 			{
-				position55 := position
+				position54 := position
 				if !_rules[ruleOp]() {
-					goto l54
+					goto l53
+				}
+				if !_rules[ruleAction8]() {
+					goto l53
 				}
 				if !_rules[ruleSpaces]() {
-					goto l54
+					goto l53
 				}
 				if !_rules[ruleNoOpExpression]() {
-					goto l54
+					goto l53
 				}
-				if !_rules[ruleAction7]() {
-					goto l54
+				if !_rules[ruleAction9]() {
+					goto l53
 				}
-				add(ruleUnop, position55)
+				add(ruleUnop, position54)
 			}
 			return true
-		l54:
-			position, tokenIndex = position54, tokenIndex54
+		l53:
+			position, tokenIndex = position53, tokenIndex53
 			return false
 		},
-		/* 15 Op <- <'+'> */
+		/* 15 Op <- <<'+'>> */
 		func() bool {
-			position56, tokenIndex56 := position, tokenIndex
+			position55, tokenIndex55 := position, tokenIndex
 			{
-				position57 := position
-				if buffer[position] != rune('+') {
-					goto l56
+				position56 := position
+				{
+					position57 := position
+					if buffer[position] != rune('+') {
+						goto l55
+					}
+					position++
+					add(rulePegText, position57)
 				}
-				position++
-				add(ruleOp, position57)
+				add(ruleOp, position56)
 			}
 			return true
-		l56:
-			position, tokenIndex = position56, tokenIndex56
+		l55:
+			position, tokenIndex = position55, tokenIndex55
 			return false
 		},
 		/* 16 Number <- <<Digit+>> */
@@ -1222,21 +1238,35 @@ func (p *Parser) Init() {
 			}
 			return true
 		},
-		nil,
-		/* 35 Action6 <- <{ p.AddBinop(text) }> */
+		/* 34 Action6 <- <{ p.AddBinopName(text) }> */
 		func() bool {
 			{
 				add(ruleAction6, position)
 			}
 			return true
 		},
-		/* 36 Action7 <- <{ p.AddUnop(text) }> */
+		/* 35 Action7 <- <{ p.EndBinop() }> */
 		func() bool {
 			{
 				add(ruleAction7, position)
 			}
 			return true
 		},
+		/* 36 Action8 <- <{ p.StartUnop(text) }> */
+		func() bool {
+			{
+				add(ruleAction8, position)
+			}
+			return true
+		},
+		/* 37 Action9 <- <{ p.EndUnop() }> */
+		func() bool {
+			{
+				add(ruleAction9, position)
+			}
+			return true
+		},
+		nil,
 	}
 	p.rules = _rules
 }

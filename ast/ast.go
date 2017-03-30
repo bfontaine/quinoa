@@ -12,6 +12,8 @@ const (
 	UnopNodeType
 	BinopNodeType
 	FuncCallNodeType
+
+	BinopNameNodeType
 )
 
 type Node struct {
@@ -69,6 +71,8 @@ func (n *Node) String() string {
 		prefix = "unop"
 	case BinopNodeType:
 		prefix = "binop"
+	case BinopNameNodeType:
+		prefix = "binopName"
 	case FuncCallNodeType:
 		prefix = "funccall"
 	default:
