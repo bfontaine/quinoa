@@ -7,17 +7,21 @@ import (
 	"log"
 	"os"
 
+	"github.com/bfontaine/quinoa/compiler"
 	"github.com/bfontaine/quinoa/parser"
+	"github.com/bfontaine/quinoa/vm"
 )
 
 func main() {
 	var output, ldflags string
-	var debug bool
+	var debug, vmFlag bool
 
 	flag.BoolVar(&debug, "debug", false, "debug")
 
 	flag.StringVar(&output, "o", "a.out", "output file")
 	flag.StringVar(&ldflags, "ldflags", "-lc", "comma-separated ld flags")
+
+	flag.BoolVar(&vmFlag, "vm", false, "Run the code in a VM")
 
 	flag.Parse()
 
@@ -42,6 +46,18 @@ func main() {
 
 	if debug {
 		log.Printf("Parsed:\n%v", ast)
+	}
+
+	gs, err := compiler.CompileGrains(ast)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if vmFlag {
+		vm := vm.NewVM(debug)
+		if err := vm.Run(gs); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	//	comp := compiler.NewCompiler()

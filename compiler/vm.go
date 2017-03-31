@@ -1,40 +1,12 @@
 package compiler
 
-import "github.com/bfontaine/quinoa/ast"
-
-type OpCode int8
-
-// load(name) -- push 1
-// const(value) -- push 1
-// add() -- pop 2, push 1
-// store(name) -- peek 1
-// call(name, N) -- pop N, push 1
-// discard() -- pop 1
-
-const (
-	StoreOpCode OpCode = iota
-	LoadOpCode
-	ConstOpCode
-	AddOpCode
-	CallOpCode
-	DiscardOpCode
+import (
+	"github.com/bfontaine/quinoa/ast"
+	"github.com/bfontaine/quinoa/language"
 )
 
-// A Grain represents an instruction in the intermediate representation
-type Grain struct {
-	OpCode OpCode
-	Name   string
-	PopN   int
-}
-
-// Grains represents a sequence of instructions in the intermediate
-// representation.
-type Grains []Grain
-
-// TODO tests
-
-func CompileGrains(a *ast.Node) (Grains, error) {
-	var grains Grains
+func CompileGrains(a *ast.Node) (language.Grains, error) {
+	var grains language.Grains
 
 	switch a.Type() {
 	case ast.RootNodeType:
@@ -43,7 +15,7 @@ func CompileGrains(a *ast.Node) (Grains, error) {
 				return nil, err
 			} else {
 				grains = append(grains, gs...)
-				grains = append(grains, Grain{DiscardOpCode, "", 1})
+				grains = append(grains, language.Grain{language.DiscardOpCode, "", 0, 1})
 			}
 		}
 
@@ -57,13 +29,13 @@ func CompileGrains(a *ast.Node) (Grains, error) {
 			grains = append(grains, gs...)
 		}
 
-		grains = append(grains, Grain{StoreOpCode, variable.Name(), 1})
+		grains = append(grains, language.Grain{language.StoreOpCode, variable.Name(), a.Value(), 1})
 
 	case ast.LitteralNodeType:
-		grains = append(grains, Grain{ConstOpCode, a.Name(), 0})
+		grains = append(grains, language.Grain{language.ConstOpCode, a.Name(), a.Value(), 0})
 
 	case ast.VariableNodeType:
-		grains = append(grains, Grain{LoadOpCode, a.Name(), 0})
+		grains = append(grains, language.Grain{language.LoadOpCode, a.Name(), a.Value(), 0})
 
 	case ast.UnopNodeType:
 		if name := a.Name(); name != "+" {
@@ -89,7 +61,7 @@ func CompileGrains(a *ast.Node) (Grains, error) {
 			}
 		}
 
-		grains = append(grains, Grain{AddOpCode, a.Name(), 2})
+		grains = append(grains, language.Grain{language.AddOpCode, a.Name(), a.Value(), 2})
 
 	case ast.FuncCallNodeType:
 		args := a.Children()
@@ -102,7 +74,7 @@ func CompileGrains(a *ast.Node) (Grains, error) {
 				grains = append(grains, gs...)
 			}
 		}
-		grains = append(grains, Grain{CallOpCode, a.Name(), nargs})
+		grains = append(grains, language.Grain{language.CallOpCode, a.Name(), a.Value(), nargs})
 	}
 
 	return grains, nil

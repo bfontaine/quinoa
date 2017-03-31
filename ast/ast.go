@@ -1,6 +1,9 @@
 package ast
 
-import "bytes"
+import (
+	"bytes"
+	"strconv"
+)
 
 type NodeType int8
 
@@ -32,6 +35,12 @@ func NewNode(nodeType NodeType, name string) *Node {
 
 func (n *Node) Type() NodeType { return n.nodeType }
 func (n *Node) Name() string   { return n.name }
+func (n *Node) Value() (v int64) {
+	if n.nodeType == LitteralNodeType {
+		v, _ = strconv.ParseInt(n.name, 10, 64)
+	}
+	return
+}
 
 func (n1 *Node) AddChild(n2 *Node) {
 	n1.children = append(n1.children, n2)
